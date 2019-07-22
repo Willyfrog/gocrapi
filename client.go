@@ -71,3 +71,58 @@ func handleResponse(response *http.Response, result interface{}) error {
 	return nil
 
 }
+
+type Member struct {
+	tag      string
+	name     string
+	trophies int
+}
+
+/* Sample clan structure from server:
+{
+  "state": "string",
+  "warEndTime": "string",
+  "clan": {
+    "tag": "string",
+    "name": "string",
+    "badgeId": 0,
+    "clanScore": 0,
+    "participants": 0,
+    "battlesPlayed": 0,
+    "wins": 0,
+    "crowns": 0
+  },
+  "participants": [
+    {
+      "tag": "string",
+      "name": "string",
+      "cardsEarned": 0,
+      "battlesPlayed": 0,
+      "wins": 0
+    }
+  ]
+}
+*/
+
+type WarClan struct {
+	Tag             string
+	Name            string
+	Participants    int
+	MemberList      []Member
+	clanChestPoints int
+}
+
+func (c *Client) GetClan(tag string) (*WarClan, error) {
+	params := url.Values{}
+	params.Set("id", tag)
+	response, err := c.get(fmt.Sprintf("/clan/%s/war", tag), params)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Error while querying for warclan %s", tag)
+	}
+	clan := new(WarClan)
+	err = handleResponse(response, clan)
+	if err != nil {
+		return clan, errors.Wrapf(err, "Error parsing response for clan %s", tag)
+	}
+	return clan, nil
+}
