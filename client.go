@@ -64,7 +64,10 @@ func handleResponse(response *http.Response, result interface{}) error {
 	if response.StatusCode >= 400 {
 		return fmt.Errorf("Error from the api [%s]: %s", response.Status, readbody)
 	}
-	json.Unmarshal(readbody, result)
+	err = json.Unmarshal(readbody, result)
+	if err != nil {
+		return errors.Wrap(err, "Error while parsing the response into json")
+	}
 	return nil
 
 }
