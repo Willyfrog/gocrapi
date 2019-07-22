@@ -1,6 +1,7 @@
 package gocrapi
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -36,7 +37,7 @@ func (c *Client) newClient() http.Client {
 	return http.Client{Timeout: c.timeout}
 }
 
-func (c *Client) Get(item string, params url.Values) ([]byte, error) {
+func (c *Client) get(item string, params url.Values) (*http.Response, error) {
 	request, err := http.NewRequest("GET", c.baseURL+item, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "Error creating request")
@@ -51,7 +52,19 @@ func (c *Client) Get(item string, params url.Values) ([]byte, error) {
 	if reqErr != nil {
 		return nil, errors.Wrap(reqErr, "Error doing request")
 	}
-	// TODO: maybe this should just return a response object and handle it elsewhere
+	return response, nil
+}
+
+func handleResponse(response *http.Response, result interface{}) error {
 	defer response.Body.Close()
-	return ioutil.ReadAll(response.Body)
+	readbody, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return errors.Wrap(err, "Error while reading body from response")
+	}
+	if response.StatusCode >= 400 {
+		return fmt.Errorf("Error from the api [%s]: %s", response.Status, readbody)
+	}
+	json.Unmarshal(readbody, result)
+	return nil
+
 }
