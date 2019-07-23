@@ -42,7 +42,7 @@ func (c *Client) get(item string, params url.Values) (*http.Response, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "Error creating request")
 	}
-	request.Header.Add(
+	request.Header.Set(
 		"Authorization",
 		fmt.Sprintf("Bearer %s", c.token),
 	)
