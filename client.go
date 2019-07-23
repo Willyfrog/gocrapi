@@ -18,7 +18,7 @@ type Client struct {
 	baseURL string
 }
 
-const officialAPI = "https://api.royaleapi.com"
+const officialAPI = "https://api.clashroyale.com/v1"
 
 // New creates a brand new client for interacting with the api
 func New(token string) (*Client, error) {
@@ -62,7 +62,7 @@ func handleResponse(response *http.Response, result interface{}) error {
 		return errors.Wrap(err, "Error while reading body from response")
 	}
 	if response.StatusCode >= 400 {
-		return fmt.Errorf("Error from the api [%s]: %s", response.Status, readbody)
+		return fmt.Errorf("Error from the api calling %s [%s]: %s", response.Request.URL, response.Status, readbody)
 	}
 	err = json.Unmarshal(readbody, result)
 	if err != nil {
@@ -72,57 +72,17 @@ func handleResponse(response *http.Response, result interface{}) error {
 
 }
 
-type Member struct {
-	tag      string
-	name     string
-	trophies int
-}
-
-/* Sample clan structure from server:
-{
-  "state": "string",
-  "warEndTime": "string",
-  "clan": {
-    "tag": "string",
-    "name": "string",
-    "badgeId": 0,
-    "clanScore": 0,
-    "participants": 0,
-    "battlesPlayed": 0,
-    "wins": 0,
-    "crowns": 0
-  },
-  "participants": [
-    {
-      "tag": "string",
-      "name": "string",
-      "cardsEarned": 0,
-      "battlesPlayed": 0,
-      "wins": 0
-    }
-  ]
-}
-*/
-
-type WarClan struct {
-	Tag             string
-	Name            string
-	Participants    int
-	MemberList      []Member
-	clanChestPoints int
-}
-
-func (c *Client) GetClan(tag string) (*WarClan, error) {
+func (c *Client) GetClan(tag *Tag) (*ClanCurrentWar, error) {
 	params := url.Values{}
-	params.Set("id", tag)
-	response, err := c.get(fmt.Sprintf("/clan/%s/war", tag), params)
+
+	response, err := c.get(fmt.Sprintf("/clans/%s/currentwar", tag.URLEncode()), params)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error while querying for warclan %s", tag)
 	}
-	clan := new(WarClan)
+	clan := new(ClanCurrentWar)
 	err = handleResponse(response, clan)
 	if err != nil {
-		return clan, errors.Wrapf(err, "Error parsing response for clan %s", tag)
+		return clan, errors.Wrapf(err, "Error handling response for clan %s", tag)
 	}
 	return clan, nil
 }
