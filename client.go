@@ -16,6 +16,7 @@ type Client struct {
 	token   string
 	timeout time.Duration
 	baseURL string
+	client  *http.Client
 }
 
 const officialAPI = "https://api.clashroyale.com/v1"
@@ -33,8 +34,11 @@ func New(token string) (*Client, error) {
 	return &c, nil
 }
 
-func (c *Client) newClient() http.Client {
-	return http.Client{Timeout: c.timeout}
+func (c *Client) newClient() *http.Client {
+	if c.client != nil { // testing purposes or special setup
+		return c.client
+	}
+	return &http.Client{Timeout: c.timeout}
 }
 
 func (c *Client) get(item string, params url.Values) (*http.Response, error) {
