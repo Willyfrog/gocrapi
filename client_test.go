@@ -30,6 +30,13 @@ func NewTestClient(srv *httptest.Server) *Client {
 	c.client = srv.Client()
 	return c
 }
+// TODO: add test with 404
+
+// TODO: add test with success
+
+// TODO: add test with unathorized
+
+// TODO: remove this test
 func TestGetClan(t *testing.T) {
 
 	t.Run("accessDenied", func(t *testing.T) {
@@ -44,6 +51,7 @@ func TestGetClan(t *testing.T) {
 		assert.NotNil(t, err)
 		errCause := errors.Cause(err)
 		require.NotNil(t, errCause)
+		require.Equal(t, errCause.(type), *url.Error)
 		originalErr := errCause
 		assert.Nil(t, originalErr)
 	})
