@@ -42,7 +42,10 @@ func TestGetClan(t *testing.T) {
 		clan, err := c.GetClan(NewTag(clanTag))
 		assert.Nil(t, clan)
 		assert.NotNil(t, err)
-		assert.Nil(t, errors.Cause(err))
+		errCause := errors.Cause(err)
+		require.NotNil(t, errCause)
+		originalErr := errCause
+		assert.Nil(t, originalErr)
 	})
 
 	t.Run("Running agains real server, so it might fail", func(t *testing.T) {
