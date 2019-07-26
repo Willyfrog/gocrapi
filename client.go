@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 // Client holds info about how to connect to clash's api
@@ -36,6 +37,7 @@ func New(token string) (*Client, error) {
 
 func (c *Client) newClient() *http.Client {
 	if c.client != nil { // testing purposes or special setup
+		log.WithFields(log.Fields{"from": "newClient"}).Info("Using existing client")
 		return c.client
 	}
 	return &http.Client{Timeout: c.timeout}
@@ -66,7 +68,8 @@ func handleResponse(response *http.Response, result interface{}) error {
 		return errors.Wrap(err, "Error while reading body from response")
 	}
 	if response.StatusCode >= 400 {
-		return fmt.Errorf("Error from the api calling %s [%s]: %s", response.Request.URL, response.Status, readbody)
+		errResponse := errors.New(response.Status)
+		return errors.Wrapf(errResponse, "Error from the api calling %s [%s]: %s", response.Request.URL, response.Status, readbody)
 	}
 	err = json.Unmarshal(readbody, result)
 	if err != nil {
