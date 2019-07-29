@@ -71,6 +71,7 @@ func handleResponse(response *http.Response, result interface{}) error {
 		errResponse := errors.New(response.Status)
 		return errors.Wrapf(errResponse, "Error from the api calling %s [%s]: %s", response.Request.URL, response.Status, readbody)
 	}
+	log.WithFields(log.Fields{"from": "handleResponse"}).Debug("%s", readbody)
 	err = json.Unmarshal(readbody, result)
 	if err != nil {
 		return errors.Wrap(err, "Error while parsing the response into json")
